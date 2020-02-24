@@ -10,17 +10,13 @@ from FMFamily.utilities import *
 import math
 import pandas as pd
 import logging
-logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s',level=logging.INFO)
+logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
+
 
 class DeepFM(object):
-    """
-    Deep FM with FTRL optimization
-    """
+
     def __init__(self, config):
-        """
-        :param config: configuration of hyperparameters
-        type of dict
-        """
+
         # number of latent factors
         self.k = config['k']
         self.lr = config['lr']
@@ -40,13 +36,9 @@ class DeepFM(object):
         self.keep_prob = tf.placeholder('float32')
 
     def inference(self):
-        """
-        forward propagation
-        :return: labels for each sample
-        """
+
         v = tf.Variable(tf.truncated_normal(shape=[self.p, self.k], mean=0, stddev=0.01),dtype='float32')
 
-        # Factorization Machine
         with tf.variable_scope('FM'):
             b = tf.get_variable('bias', shape=[2],
                                 initializer=tf.zeros_initializer())
@@ -319,7 +311,7 @@ if __name__ == '__main__':
     saver = tf.train.Saver(max_to_keep=5)
 
     with tf.Session() as sess:
-        
+
         sess.run(tf.global_variables_initializer())
         # restore trained parameters
         check_restore_parameters(sess, saver)
