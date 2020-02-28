@@ -18,7 +18,7 @@ class HyperArgs():
 
     epoch = 3
     batch_size = 64
-    learning_rate = 1.0
+    learning_rate = 0.05
     l2_reg_rate = 0.01
     is_training = False
     checkpoint_dir = '/Users/wuxikun/Documents/gRPC/python3/FMFamily/model/'
