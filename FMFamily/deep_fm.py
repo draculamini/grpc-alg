@@ -8,14 +8,16 @@ import tensorflow as tf
 import sys
 from FMFamily.build_data import load_data
 
+
 class HyperArgs():
 
     # 模型参数
-    feature_size = 100
-    embedding_size = 256
-    deep_layers = [512, 256, 128]
-    field_size = 15
+    feature_size = 100  # 特征个数
+    embedding_size = 256  # 嵌入维度 这里是FM第二个因子v向量维度, DNN层和FM输入相同
+    deep_layers = [512, 256, 128]  # DNN各层维度数组
+    field_size = 15  # 按领域区分特征的特征field个数
 
+    # 训练中参数
     epoch = 3
     batch_size = 64
     learning_rate = 0.05
@@ -41,19 +43,21 @@ class DeepFM():
 
     def build_model(self):
 
-        # 输入数据
+        # 输入数据 feat_index 是特征下标用于 取FM算法第一个因子权重及第二因子的v向量
         self.feat_index = tf.placeholder(tf.int32, [None, None], "feat_indx")
         self.feat_value = tf.placeholder(tf.float32, [None, None], "feat_value")
         self.label = tf.placeholder(tf.float32, [None, None], "label")
 
-        # 第一个因子
+        # FM算法 第一个因子
+        # 第一个因子W1
         self.weight["first_actor_weight"] = tf.Variable(
             tf.random_normal([self.feature_size, 1], 0.0, 0.01), name="first_actor_weight"
         )
-
+        # W1*X
         self.fm_first_actor = tf.multiply(tf.nn.embedding_lookup(
             self.weight["first_actor_weight"],  self.feat_index
         ), tf.reshape(self.feat_value, [-1, self.field_size, 1]))
+        # 求和 ∑W1i * Xi
         self.fm_first_actor = tf.reduce_sum(self.fm_first_actor, 2)
 
         # 第二个因子
