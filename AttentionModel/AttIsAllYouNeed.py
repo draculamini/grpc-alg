@@ -12,13 +12,16 @@ import tensorflow as tf
 
 class HyperArgs():
     embedding_dim = 128
-    max_feature = 1000
+    max_feature = 200
     max_len = 200
     num_classes = 2
     learning_rate = 0.01
 
-    EPOCH = 20
-    batch_size = 128
+    num_head = 8
+    size_per_head = 32
+
+    EPOCH = 10
+    batch_size = 64
 
 
 class SelfDotAtt():
@@ -36,42 +39,58 @@ class SelfDotAtt():
     def build_model(self):
 
         self.x = tf.placeholder(tf.int32, [None, self.max_len])
-        self.y = tf.placeholder(tf.float32, [None, 2])
+        self.y = tf.placeholder(tf.float32, [None])
+
+        self.label = tf.reshape(self.y, [-1, 1])
+
         self.embedding_dict = tf.Variable(
             tf.random_normal([self.max_feature, self.embedding_dim], 0, 0.01),
-            name="embedding_dict"
+            name="embedding_dict", trainable=True
         )
         embed = tf.nn.embedding_lookup(self.embedding_dict, self.x)  # (batch_size, maxlen, embeding_dim)
         # self attention y = softmax( Q * K / sqrt(k)) * V
         Q, K, V = embed, embed, embed
         Q_K = tf.matmul(Q, tf.transpose(K, [0, 2, 1]))
-        Q_K_V = tf.matmul(tf.div(tf.nn.softmax(Q_K), tf.sqrt(self.embedding_dim * 1.0)), V)
+        soft_max_QK = tf.nn.softmax(tf.div(tf.nn.softmax(Q_K), tf.sqrt(self.max_len * 1.0)))
 
+        soft_max_QK = tf.nn.dropout(soft_max_QK, 0.2)
+
+        Q_K_V = tf.matmul(soft_max_QK, V)
         fc = tf.reshape(Q_K_V, [-1, self.embedding_dim * self.max_len])
 
+        fc = tf.nn.dropout(fc, 0.5)
+
         out_weight = tf.Variable(
-            tf.random_normal([self.embedding_dim * self.max_len, self.num_classes]),
+            tf.random_normal([self.embedding_dim * self.max_len, 1]),
             name="out_weight"
         )
 
         self.out = tf.matmul(fc, out_weight)
+
         self.out = tf.sigmoid(self.out)
 
-        self.cross_entropy = -tf.reduce_sum(self.y * tf.log(self.out))
-        self.train_step = tf.train.AdamOptimizer(1e-4).minimize(self.cross_entropy)
+        self.loss = -tf.reduce_mean(
+            self.label * tf.log(self.out + 1e-24) + (1 - self.label) * tf.log(1 - self.out + 1e-24))
 
-        self.correct_prediction = tf.equal(tf.argmax(self.out, 1), tf.argmax(self.y, 1))
+        self.train_step = tf.train.AdamOptimizer(self.learning_rate).minimize(self.loss)
+
+        self.correct_prediction = tf.equal(tf.argmax(self.out, 1), tf.argmax(self.label, 1))
         self.accuracy = tf.reduce_mean(tf.cast(self.correct_prediction, "float"))
 
     def train(self, sess, batch_x, batch_y):
 
-        _, accuracy = sess.run([self.train_step, self.accuracy], feed_dict={
+        _, accuracy, loss = sess.run([self.train_step, self.accuracy, self.loss], feed_dict={
             self.x: batch_x,
             self.y: batch_y
         })
 
-        return accuracy
+        return accuracy, loss
 
+
+class MultiHeadAtt():
+
+    def __init__(self, args):
+        pass
 
 
 if __name__ == '__main__':
@@ -82,9 +101,6 @@ if __name__ == '__main__':
     #  数据预处理
     train_x = pad_sequences(train_x, maxlen=args.max_len)
     test_x = pad_sequences(test_x, maxlen=args.max_len)
-
-    train_y = keras.utils.np_utils.to_categorical(train_y, 2)
-    test_y = keras.utils.np_utils.to_categorical(test_y, 2)
 
     selfDotModel = SelfDotAtt(args)
 
@@ -97,17 +113,21 @@ if __name__ == '__main__':
 
             sess.run(tf.global_variables_initializer())
 
+            variable_names = [v.name for v in tf.trainable_variables()]
+            values = sess.run(variable_names)
+
             while current_index + args.batch_size < max_size:
 
                 batch_x = train_x[current_index: current_index + args.batch_size]
                 batch_y = train_y[current_index: current_index + args.batch_size]
 
-                acc = selfDotModel.train(sess, batch_x, batch_y)
-                current_index += args.batch_size
-                # print("Epoch : ", i, " current_index: ", current_index, "max_size", max_size , "acc :", acc)
+                acc, loss = selfDotModel.train(sess, batch_x, batch_y)
 
-            acc = selfDotModel.train(sess, test_x, test_y)
-            print("Epoch : ", i,  "test acc :", acc)
+                current_index += args.batch_size
+                print("Epoch : ", i, " current_index: ", current_index, "max_size", max_size, "acc :", acc, "loss: ", loss)
+
+            acc, loss = selfDotModel.train(sess, test_x, test_y)
+            print("Epoch : ", i,  "test acc :", acc, " test loss :", loss)
 
 
 
