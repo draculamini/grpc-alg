@@ -14,7 +14,7 @@ class HyperArgs():
     max_feature = 200
     max_len = 200
     num_classes = 2
-    learning_rate = 0.01
+    learning_rate = 0.001
 
     num_head = 8
     size_per_head = 32
@@ -64,8 +64,6 @@ class SelfDotAtt():
 
         self.out = tf.sigmoid(self.out)
 
-
-
         self.loss = -tf.reduce_mean(
             self.label * tf.log(self.out + 1e-24) + (1 - self.label) * tf.log(1 - self.out + 1e-24))
 
@@ -74,7 +72,7 @@ class SelfDotAtt():
         one = tf.ones_like(self.out)
         zero = tf.zeros_like(self.out)
         tmp = tf.where(self.out < 0.5, x=zero, y=one)
-        self.correct_prediction = tf.equal(tmp, self.label)
+        self.correct_prediction = tf.equal(tf.cast(tmp, "float"), self.label)
         self.accuracy = tf.reduce_mean(tf.cast(self.correct_prediction, "float"))
 
     def train(self, sess, batch_x, batch_y):
