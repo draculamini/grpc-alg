@@ -14,7 +14,7 @@ class HyperArgs():
     max_feature = 200
     max_len = 200
     num_classes = 2
-    learning_rate = 0.005
+    learning_rate = 0.01
 
     num_head = 8
     size_per_head = 32
