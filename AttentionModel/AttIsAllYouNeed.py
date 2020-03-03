@@ -5,7 +5,6 @@
 
 from keras.datasets import imdb
 from keras.preprocessing.sequence import pad_sequences
-import keras
 
 import tensorflow as tf
 
