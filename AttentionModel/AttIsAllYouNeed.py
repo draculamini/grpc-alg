@@ -14,7 +14,7 @@ class HyperArgs():
     max_feature = 200
     max_len = 200
     num_classes = 2
-    learning_rate = 0.005
+    learning_rate = 0.002
 
     num_head = 8
     size_per_head = 32
@@ -51,14 +51,10 @@ class SelfDotAtt():
         Q, K, V = embed, embed, embed
         Q_K = tf.matmul(Q, tf.transpose(K, [0, 2, 1]))
         soft_max_QK = tf.nn.softmax(tf.div(tf.nn.softmax(Q_K), tf.sqrt(self.max_len * 1.0)))
-
         soft_max_QK = tf.nn.dropout(soft_max_QK, 0.2)
-
         Q_K_V = tf.matmul(soft_max_QK, V)
         fc = tf.reshape(Q_K_V, [-1, self.embedding_dim * self.max_len])
-
         fc = tf.nn.dropout(fc, 0.5)
-
         out_weight = tf.Variable(
             tf.random_normal([self.embedding_dim * self.max_len, 1]),
             name="out_weight"
@@ -128,7 +124,7 @@ if __name__ == '__main__':
                 acc, loss = selfDotModel.train(sess, batch_x, batch_y)
 
                 current_index += args.batch_size
-                print("Epoch : ", i, " current_index: ", current_index, "max_size", max_size, "acc :", acc, "loss: ", loss)
+                # print("Epoch : ", i, " current_index: ", current_index, "max_size", max_size, "acc :", acc, "loss: ", loss)
 
             acc, loss = selfDotModel.train(sess, test_x, test_y)
             print("Epoch : ", i,  "test acc :", acc, " test loss :", loss)

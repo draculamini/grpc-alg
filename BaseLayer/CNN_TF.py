@@ -10,7 +10,7 @@ import BaseLayer.input_data as input_data
 mnist = input_data.read_data_sets('MNIST_data', one_hot=True)
 
 
-class MnistRNN():
+class MnistCNN():
 
     def __init__(self):
         self.build_model()
@@ -63,7 +63,7 @@ class MnistRNN():
 
 if __name__ == '__main__':
 
-     model = MnistRNN()
+     model = MnistCNN()
 
      with tf.Session() as sess:
 
