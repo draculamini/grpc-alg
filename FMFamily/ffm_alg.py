@@ -68,25 +68,23 @@ class FFM(object):
         )
 
         fm_result = None
-
         for i in range(self.fm_field_size):
             for j in range(i + 1, self.fm_field_size):
-
                 vi_fj = tf.nn.embedding_lookup(self.weight["embedding_weight"][j], self.feat_index) # [batch, field_size, embedding_size]
                 vj_fi = tf.nn.embedding_lookup(self.weight["embedding_weight"][i], self.feat_index) # [batch, field_size, embedding_size]
                 wij = tf.reduce_sum(tf.multiply(vi_fj, vj_fi), axis=2) # (batch_x, field_size)
 
-                x_i = self.feat_value[:, i] # batch
-                x_j = self.feat_value[:, j] # batch
-                xij = tf.multiply(x_i, x_j) # (batch )
+                x_i = self.feat_value[:, i]
+                x_j = self.feat_value[:, j]
+                xij = tf.multiply(x_i, x_j)
                 xij = tf.expand_dims(xij, 1)
 
                 if (fm_result == None):
                     fm_result = tf.multiply(wij, xij)  # (batch, 1)
                 else:
-                    fm_result += tf.multiply(wij, xij) # (batch_x, field_size)
+                    fm_result += tf.multiply(wij, xij)  # (batch_x, field_size)
 
-        merge = fm_result + self.fm_first_actor # (batch_x, field_size)
+        merge = fm_result + self.fm_first_actor  # (batch_x, field_size)
 
         merge_layer_size = self.field_size
         init_value = np.sqrt(np.sqrt(2.0 / (merge_layer_size + 1)))
@@ -108,9 +106,6 @@ class FFM(object):
             self.label * tf.log(self.out + 1e-24) + (1 - self.label) * tf.log(1 - self.out + 1e-24))
 
         self.loss += tf.contrib.layers.l2_regularizer(self.l2_reg_rate)(self.weight["merge_layer"])
-
-        # for i in range(len(self.deep_layers)):
-        #     self.loss += tf.contrib.layers.l2_regularizer(self.l2_reg_rate)(self.weight["layer_%d" % i])
 
         self.global_step = tf.Variable(0, trainable=False)
         opt = tf.train.GradientDescentOptimizer(self.learning_rate)
