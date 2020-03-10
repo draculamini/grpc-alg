@@ -15,7 +15,9 @@ class HyperArgs(object):
     feature_size = 100  # 特征个数
     embedding_size = 256  # 嵌入维度 这里是FM第二个因子v向量维度, DNN层和FM输入相同
     deep_layers = [512, 256, 128]  # DNN各层维度数组
-    field_size = 15  # 按领域区分特征的特征field个数
+    field_size = 39 # 特征个数
+
+    fm_field_size = 15  # 按领域区分特征的特征field个数
 
     # 训练中参数
     epoch = 3
@@ -24,17 +26,6 @@ class HyperArgs(object):
     l2_reg_rate = 0.01
     is_training = False
     checkpoint_dir = '/Users/wuxikun/Documents/gRPC/python3/FMFamily/model/'
-
-    # k = 6
-    # f = 24
-    # p = 100
-    # learning_rate = 0.1
-    # batch_size = 64
-    # l2_reg_rate = 0.001
-    # feature2field = None
-    # is_training = True
-    # epoch = 1
-    # checkpoint_dir = '/Users/wuxikun/Documents/gRPC/python3/FMFamily/model/'
 
 
 class FFM(object):
@@ -47,6 +38,7 @@ class FFM(object):
         self.feature_size = args.feature_size
         self.learning_rate = args.learning_rate
         self.deep_activation = tf.nn.relu
+        self.fm_field_size = args.fm_field_size
 
         self.weight = dict()
         self.build_model()
@@ -72,13 +64,13 @@ class FFM(object):
 
         # 第二个因子
         self.weight["embedding_weight"] = tf.Variable(
-            tf.random_normal([self.field_size, self.feature_size, self.embedding_size], 0.0, 0.01), name="embedding_weight"
+            tf.random_normal([self.fm_field_size, self.feature_size, self.embedding_size], 0.0, 0.01), name="embedding_weight"
         )
 
         fm_result = None
 
-        for i in range(self.field_size):
-            for j in range(i + 1, self.field_size):
+        for i in range(self.fm_field_size):
+            for j in range(i + 1, self.fm_field_size):
 
                 vi_fj = tf.nn.embedding_lookup(self.weight["embedding_weight"][j], self.feat_index) # [batch, field_size, embedding_size]
                 vj_fi = tf.nn.embedding_lookup(self.weight["embedding_weight"][i], self.feat_index) # [batch, field_size, embedding_size]
@@ -171,6 +163,7 @@ if __name__ == '__main__':
     args.feature_sizes = data['feat_dim']
     args.field_size = len(data['xi'][0])
     args.is_training = True
+
 
     with tf.Session(config=gpu_config) as sess:
         Model = FFM(args)
