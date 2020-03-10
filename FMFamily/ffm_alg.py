@@ -15,7 +15,7 @@ class HyperArgs(object):
     feature_size = 100  # 特征个数
     embedding_size = 256  # 嵌入维度 这里是FM第二个因子v向量维度, DNN层和FM输入相同
     deep_layers = [512, 256, 128]  # DNN各层维度数组
-    field_size = 39 # 特征个数
+    field_size = 39  # 一条记录里的特征个数
 
     fm_field_size = 15  # 按领域区分特征的特征field个数
 
