@@ -67,7 +67,8 @@ class DeepFM():
         self.embed_part_weight = tf.nn.embedding_lookup(self.weight["embedding_weight"], self.feat_index)
 
         # embed_part_weight -> (batch_size, field_size, embedding_size)
-        self.embed_part = tf.multiply(self.embed_part_weight, tf.reshape(self.feat_value, [-1, self.field_size, 1]))
+        tmp = tf.reshape(self.feat_value, [-1, self.field_size, 1])
+        self.embed_part = tf.multiply(self.embed_part_weight, tmp)
 
         self.second_factor_sum = tf.reduce_sum(self.embed_part, 1)
         self.second_factor_sum_square = tf.square(self.second_factor_sum)
