@@ -58,4 +58,8 @@ classifier = tf.estimator.DNNClassifier(
 # Train the Model.
 classifier.train(
     input_fn=lambda: input_fn(train, train_y, training=True),
-    steps=5000)
+    steps=10000)
+eval_result = classifier.evaluate(
+    input_fn=lambda: input_fn(test, test_y, training=False))
+
+print('\nTest set accuracy: {accuracy:0.3f}\n'.format(**eval_result))

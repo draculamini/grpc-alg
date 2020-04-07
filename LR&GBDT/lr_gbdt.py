@@ -48,7 +48,7 @@ print('Start training...')
 gbm = lgb.train(params,
                 lgb_train,
                 num_boost_round=100,
-                valid_sets=lgb_train)
+                valid_sets=lgb_eval)
 print('Save model...')
 # save model to file
 gbm.save_model('model.txt')
