@@ -63,10 +63,17 @@ if __name__ == '__main__':
     print(y)
     print(tf.keras.layers.multiply([x, y]))
 
+    index = tf.cast(x, tf.int32)
+
     x = tf.keras.backend.random_normal(
-        [10], mean=0.0, stddev=1.0, dtype=None, seed=None
+        [100], mean=0.0, stddev=1.0, dtype=None, seed=None
     )
-    print(x)
+
+
+    # index = tf.linspace(1, 10, 12)
+    # print(index)
+    print(tf.nn.embedding_lookup(x, index))
+    # print(x)
 
 
 
