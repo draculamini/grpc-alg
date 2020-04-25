@@ -28,26 +28,7 @@ if __name__ == '__main__':
     FEATURE_SIZE=10000
     EMBEDDIM=128
 
-    # feat_index = tf.keras.Input(None, name="feat_index")
-    # feat_value = tf.keras.Input(None, name="feat_value")
-    # weight = K.variable(np.ones((FEATURE_SIZE,), dtype='float32') * 0.8)
-
     weight_1 = tf.keras.layers.Lambda(lambda x: x * 0.8)
-
-    # weight = tf.keras.layers.Embedding(shape=(feat_value.shape[1], 1))
-    # fm_first_factor = tf.keras.layers.Multiply(weight, feat_value)
-
-    # embed = tf.keras.layers.Embedding(shape=(FEATURE_SIZE, EMBEDDIM))(feat_index)
-
-    # model = tf.keras.Model(feat_value, fm_first_factor)
-
-    # x = tf.tr([20])
-    # y = tf.random([20])
-    # print(x)
-    #
-    # sum = tf.keras.layers.multiply([x, y])
-    # print(sum)
-
     initializer = tf.keras.initializers.RandomUniform(minval=0., maxval=1.)
     x = initializer(shape=(1, 20))
 
@@ -69,11 +50,39 @@ if __name__ == '__main__':
         [100], mean=0.0, stddev=1.0, dtype=None, seed=None
     )
 
-
-    # index = tf.linspace(1, 10, 12)
-    # print(index)
     print(tf.nn.embedding_lookup(x, index))
-    # print(x)
+
+
+    input_dim = 39
+
+    feat_index = tf.keras.Input(input_dim, name="feat_index", dtype=tf.int64)
+    feat_value = tf.keras.Input(input_dim, name="feat_value")
+
+    x = tf.keras.backend.random_normal(
+        [100], mean=0.0, stddev=1.0, dtype=None, seed=None
+    )
+    fm_1_weight_table = tf.keras.backend.random_normal(
+        [FEATURE_SIZE], mean=0.0, stddev=1.0, dtype=None, seed=None
+    )
+
+    fm_1_weight = tf.nn.embedding_lookup(fm_1_weight_table, feat_index)
+    fm_1_factor = tf.keras.layers.multiply([fm_1_weight, feat_value])
+
+    fm_1_model = tf.keras.Model(inputs=[feat_index, feat_value], outputs=fm_1_factor)
+
+    initializer = tf.keras.initializers.RandomUniform(minval=0., maxval=1.)
+    value = initializer(shape=(2, 39))
+
+    print(value)
+
+    index = tf.ones(shape=[2, 39])
+    index = tf.cast(index, tf.int64)
+
+    print(fm_1_model({"feat_index": index, "feat_value": value}))
+
+
+
+
 
 
 
