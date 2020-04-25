@@ -27,6 +27,7 @@ if __name__ == '__main__':
 
     FEATURE_SIZE=10000
     EMBEDDIM=128
+    V_SIZE=5
 
     weight_1 = tf.keras.layers.Lambda(lambda x: x * 0.8)
     initializer = tf.keras.initializers.RandomUniform(minval=0., maxval=1.)
@@ -64,11 +65,12 @@ if __name__ == '__main__':
     fm_1_weight_table = tf.keras.backend.random_normal(
         [FEATURE_SIZE], mean=0.0, stddev=1.0, dtype=None, seed=None
     )
-
     fm_1_weight = tf.nn.embedding_lookup(fm_1_weight_table, feat_index)
     fm_1_factor = tf.keras.layers.multiply([fm_1_weight, feat_value])
 
-    fm_1_model = tf.keras.Model(inputs=[feat_index, feat_value], outputs=fm_1_factor)
+    embed = tf.keras.layers.Embedding(FEATURE_SIZE, V_SIZE, embeddings_initializer='uniform', name="embedding")(feat_index)
+
+    fm_1_model = tf.keras.Model(inputs=[feat_index, feat_value], outputs=embed)
 
     initializer = tf.keras.initializers.RandomUniform(minval=0., maxval=1.)
     value = initializer(shape=(2, 39))
