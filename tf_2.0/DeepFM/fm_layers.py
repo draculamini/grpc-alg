@@ -38,8 +38,17 @@ class FMLayer(tf.keras.layers.Layer):
 
 if __name__ == '__main__':
     initializer = tf.keras.initializers.RandomUniform(minval=0., maxval=1.)
-    value = initializer(shape=(2, 39))
-    index = tf.ones(shape=[2, 39])
+    input_dim = 50
+    value = initializer(shape=(2, input_dim))
+    index = tf.ones(shape=[2, input_dim])
     index = tf.cast(index, tf.int64)
     layer = FMLayer()
     print(layer(value, index))
+    input_value = tf.keras.Input(50, dtype=tf.float32, name="input_value")
+    input_index = tf.keras.Input(50, dtype=tf.int32, name="input_index")
+    fm_part = FMLayer()(input_value, input_index)
+    out = tf.keras.layers.Dense(2)(fm_part)
+    model = tf.keras.Model(inputs=[input_value, input_index], outputs=out)
+
+    print(model({"input_value": value, "input_index": index}))
+
