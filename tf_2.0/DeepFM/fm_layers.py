@@ -42,6 +42,5 @@ if __name__ == '__main__':
     value = initializer(shape=(2, 39))
     index = tf.ones(shape=[2, 39])
     index = tf.cast(index, tf.int64)
-
     layer = FMLayer()
     print(layer(value, index))
