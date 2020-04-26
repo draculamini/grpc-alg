@@ -24,7 +24,6 @@ class FMLayer(tf.keras.layers.Layer):
     def call(self, feat_value, feat_index):
         fm_1_weight = tf.nn.embedding_lookup(self.fm_1_weight_table, feat_index)
         fm_1_factor = tf.keras.layers.multiply([fm_1_weight, feat_value])
-
         embed = self.embed_layer(feat_index)
         tmp = tf.reshape(feat_value, [-1, K.shape(feat_value)[-1], 1])
         embed_part = tf.keras.layers.multiply([embed, tmp])
@@ -34,7 +33,7 @@ class FMLayer(tf.keras.layers.Layer):
         second_factor_square = tf.math.square(embed_part)
         second_factor_square_sum = tf.math.reduce_sum(second_factor_square, 1)
         fm_2_factor = 0.5 * tf.math.subtract(second_factor_sum_square, second_factor_square_sum)
-        return tf.concat([fm_1_factor, fm_2_factor], axis=1)
+        return tf.keras.layers.concatenate([fm_1_factor, fm_2_factor], axis=-1)
 
 
 if __name__ == '__main__':
