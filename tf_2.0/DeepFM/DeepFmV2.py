@@ -70,7 +70,10 @@ if __name__ == '__main__':
 
     embed = tf.keras.layers.Embedding(FEATURE_SIZE, V_SIZE, embeddings_initializer='uniform', name="embedding")(feat_index)
 
-    fm_1_model = tf.keras.Model(inputs=[feat_index, feat_value], outputs=embed)
+    tmp = tf.reshape(feat_value, [-1, input_dim, 1])
+    embed_part = tf.keras.layers.multiply([embed, tmp])
+
+    fm_1_model = tf.keras.Model(inputs=[feat_index, feat_value], outputs=embed_part)
 
     initializer = tf.keras.initializers.RandomUniform(minval=0., maxval=1.)
     value = initializer(shape=(2, 39))
