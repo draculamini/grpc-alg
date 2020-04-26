@@ -73,7 +73,15 @@ if __name__ == '__main__':
     tmp = tf.reshape(feat_value, [-1, input_dim, 1])
     embed_part = tf.keras.layers.multiply([embed, tmp])
 
-    fm_1_model = tf.keras.Model(inputs=[feat_index, feat_value], outputs=embed_part)
+    second_factor_sum = tf.math.reduce_sum(embed_part, 1)
+    second_factor_sum_square = tf.math.square(second_factor_sum)
+
+    second_factor_square = tf.math.square(embed_part)
+    second_factor_square_sum = tf.math.reduce_sum(second_factor_square, 1)
+
+    second_factor = 0.5 * tf.math.subtract(second_factor_sum_square , second_factor_square_sum)
+
+    fm_1_model = tf.keras.Model(inputs=[feat_index, feat_value], outputs=second_factor)
 
     initializer = tf.keras.initializers.RandomUniform(minval=0., maxval=1.)
     value = initializer(shape=(2, 39))
