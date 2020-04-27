@@ -19,14 +19,16 @@ class FMLayer(tf.keras.layers.Layer):
                                                      embeddings_initializer='uniform',
                                                      name="embedding")
 
-        self.fm_1_weight_table = tf.keras.backend.random_normal(
-            [max_feature_size], mean=0.0, stddev=1.0, dtype=None, seed=None
-        )
+        self.fm_1_weight_table = tf.keras.layers.Embedding(max_feature_size, 1,
+                                                     embeddings_initializer='uniform',
+                                                     name="fm_1_weight_table")
 
     @tf.function
     def call(self, feat_value, feat_index):
-        fm_1_weight = tf.nn.embedding_lookup(self.fm_1_weight_table, feat_index)
+
+        fm_1_weight = tf.squeeze(self.fm_1_weight_table(feat_index), axis=[-1])
         fm_1_factor = tf.keras.layers.multiply([fm_1_weight, feat_value])
+
         embed = self.embed_layer(feat_index)
         tmp = tf.reshape(feat_value, [-1, K.shape(feat_value)[-1], 1])
         embed_part = tf.keras.layers.multiply([embed, tmp])
@@ -36,7 +38,8 @@ class FMLayer(tf.keras.layers.Layer):
         second_factor_square = tf.math.square(embed_part)
         second_factor_square_sum = tf.math.reduce_sum(second_factor_square, 1)
         fm_2_factor = 0.5 * tf.math.subtract(second_factor_sum_square, second_factor_square_sum)
-        return tf.keras.layers.concatenate([fm_1_factor, fm_2_factor], axis=-1)
+
+        return tf.concat([fm_1_factor, fm_2_factor], axis=1)
 
     def get_config(self):
         config = {
@@ -47,6 +50,9 @@ class FMLayer(tf.keras.layers.Layer):
         }
         base_config = super(FMLayer, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
+
+    # def compute_output_shape(self, input_shape):
+    #     return input_shape[0][0], self.embed_size +
 
 if __name__ == '__main__':
     initializer = tf.keras.initializers.RandomUniform(minval=0., maxval=1.)
@@ -68,8 +74,6 @@ if __name__ == '__main__':
     print("model \n ", model({"input_value": value, "input_index": index}))
     print("model \n ", model({"input_value": value, "input_index": index}))
 
-    print(model.get_config())
-
     model_path = "../model/fmModel.h5"
     model.save(model_path)
     weight_path = "../weight/fm_model"
@@ -81,12 +85,6 @@ if __name__ == '__main__':
     # new_model.load_weights(weight_path)
 
     print("new_model \n ", new_model({"input_value": value, "input_index": index}))
-    # print(new_model.get_config())
 
-    # print(model.get_weights())  # Retrieves the state of the model.
-    # print(new_model.get_weights())  # Retrieves the state of the model.
-
-    fm_layer_weights = model.get_layer('fm_layer').get_weights()
-    print(fm_layer_weights)
 
 
