@@ -45,14 +45,11 @@ class FMLayer(tf.keras.layers.Layer):
         config = {
             'embed_size': self.embed_size,
             'max_feature_size': self.max_feature_size
-            # 'embed_layer': self.embed_layer,
-            # 'fm_1_weight_table': self.fm_1_weight_table
+
         }
         base_config = super(FMLayer, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
 
-    # def compute_output_shape(self, input_shape):
-    #     return input_shape[0][0], self.embed_size +
 
 if __name__ == '__main__':
     initializer = tf.keras.initializers.RandomUniform(minval=0., maxval=1.)
@@ -80,10 +77,7 @@ if __name__ == '__main__':
 
     model.save_weights(weight_path)
 
-    # new_model = tf.keras.models.load_model(model_path, custom_objects={'FMLayer': FMLayer})
     new_model = tf.keras.models.load_model(model_path, custom_objects={'FMLayer': FMLayer})
-    # new_model.load_weights(weight_path)
-
     print("new_model \n ", new_model({"input_value": value, "input_index": index}))
 
 
