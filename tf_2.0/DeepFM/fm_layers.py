@@ -71,22 +71,19 @@ if __name__ == '__main__':
     input_value = tf.keras.Input(input_dim, dtype=tf.float32, name="input_value")
     input_index = tf.keras.Input(input_dim, dtype=tf.int32, name="input_index")
     fm_part, embed = FMLayer(name="fm_layer")(input_value, input_index)
-
+    # deep Part
     flat = tf.keras.layers.Flatten()(embed)
     dnn1 = tf.keras.layers.Dense(128)(flat)
     dnn2 = tf.keras.layers.Dense(256)(dnn1)
     deepFm = tf.keras.layers.concatenate([fm_part, dnn2], axis=1)
     out = tf.keras.layers.Dense(2)(deepFm)
     model = tf.keras.Model(inputs=[input_value, input_index], outputs=out)
-    model.compile(optimizer=u'adam', loss="binary_crossentropy")
     print("model \n ", model({"input_value": value, "input_index": index}))
 
     model_path = "../model/fmModel.h5"
     model.save(model_path)
     weight_path = "../weight/fm_model"
-
     model.save_weights(weight_path)
-
     new_model = tf.keras.models.load_model(model_path, custom_objects={'FMLayer': FMLayer})
     print("new_model \n ", new_model({"input_value": value, "input_index": index}))
 
