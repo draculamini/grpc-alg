@@ -38,7 +38,7 @@ class FMLayer(tf.keras.layers.Layer):
         second_factor_square_sum = tf.math.reduce_sum(second_factor_square, 1)
         fm_2_factor = 0.5 * tf.math.subtract(second_factor_sum_square, second_factor_square_sum)
 
-        return tf.concat([fm_1_factor, fm_2_factor], axis=1)
+        return tf.concat([fm_1_factor, fm_2_factor], axis=1), embed
 
     def get_config(self):
         config = {
@@ -60,7 +60,7 @@ if __name__ == '__main__':
 
     input_value = tf.keras.Input(50, dtype=tf.float32, name="input_value")
     input_index = tf.keras.Input(50, dtype=tf.int32, name="input_index")
-    fm_part = FMLayer(name="fm_layer")(input_value, input_index)
+    fm_part, _ = FMLayer(name="fm_layer")(input_value, input_index)
     out = tf.keras.layers.Dense(2)(fm_part)
 
     model = tf.keras.Model(inputs=[input_value, input_index], outputs=out)
