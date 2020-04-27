@@ -53,21 +53,32 @@ class FMLayer(tf.keras.layers.Layer):
 if __name__ == '__main__':
     initializer = tf.keras.initializers.RandomUniform(minval=0., maxval=1.)
     input_dim = 50
+
     value = initializer(shape=(2, input_dim))
     index = tf.ones(shape=[2, input_dim])
-
     index = tf.cast(index, tf.int64)
 
-    input_value = tf.keras.Input(50, dtype=tf.float32, name="input_value")
-    input_index = tf.keras.Input(50, dtype=tf.int32, name="input_index")
-    fm_part, _ = FMLayer(name="fm_layer")(input_value, input_index)
-    out = tf.keras.layers.Dense(2)(fm_part)
+    # FM Model
+    # input_value = tf.keras.Input(input_dim, dtype=tf.float32, name="input_value")
+    # input_index = tf.keras.Input(input_dim, dtype=tf.int32, name="input_index")
+    # fm_part, _ = FMLayer(name="fm_layer")(input_value, input_index)
+    # out = tf.keras.layers.Dense(2)(fm_part)
+    # model = tf.keras.Model(inputs=[input_value, input_index], outputs=out)
+    # model.compile(optimizer=u'adam', loss="binary_crossentropy")
+    # print("model \n ", model({"input_value": value, "input_index": index}))
 
+    # DEEP FM Model
+    input_value = tf.keras.Input(input_dim, dtype=tf.float32, name="input_value")
+    input_index = tf.keras.Input(input_dim, dtype=tf.int32, name="input_index")
+    fm_part, embed = FMLayer(name="fm_layer")(input_value, input_index)
+
+    flat = tf.keras.layers.Flatten()(embed)
+    dnn1 = tf.keras.layers.Dense(128)(flat)
+    dnn2 = tf.keras.layers.Dense(256)(dnn1)
+    deepFm = tf.keras.layers.concatenate([fm_part, dnn2], axis=1)
+    out = tf.keras.layers.Dense(2)(deepFm)
     model = tf.keras.Model(inputs=[input_value, input_index], outputs=out)
-
     model.compile(optimizer=u'adam', loss="binary_crossentropy")
-
-    print("model \n ", model({"input_value": value, "input_index": index}))
     print("model \n ", model({"input_value": value, "input_index": index}))
 
     model_path = "../model/fmModel.h5"
