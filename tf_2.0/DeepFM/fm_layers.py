@@ -6,7 +6,6 @@
 
 import tensorflow as tf
 from tensorflow.keras import backend as K
-from tensorflow.keras.models import load_model
 import tensorflow_hub as hub
 
 
