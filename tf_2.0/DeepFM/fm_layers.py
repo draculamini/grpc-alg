@@ -52,11 +52,14 @@ class FMLayer(tf.keras.layers.Layer):
 
 if __name__ == '__main__':
     initializer = tf.keras.initializers.RandomUniform(minval=0., maxval=1.)
-    input_dim = 50
+    input_dim = 3
 
     value = initializer(shape=(2, input_dim))
     index = tf.ones(shape=[2, input_dim])
     index = tf.cast(index, tf.int64)
+
+    tf.print(index)
+    tf.print(value)
 
     # FM Model
     # input_value = tf.keras.Input(input_dim, dtype=tf.float32, name="input_value")
@@ -82,10 +85,23 @@ if __name__ == '__main__':
 
     model_path = "../model/fmModel.h5"
     model.save(model_path)
+
+    # tf.saved_model.save(model, "../model/fmModel")
     weight_path = "../weight/fm_model"
     model.save_weights(weight_path)
     new_model = tf.keras.models.load_model(model_path, custom_objects={'FMLayer': FMLayer})
     print("new_model \n ", new_model({"input_value": value, "input_index": index}))
+
+    # load_model = tf.saved_model.load("../model/fmModel")
+
+    export_path = "../model/fmModel/"
+    # tf.saved_model.save(model, export_path)
+
+    # load_model = tf.saved_model.load(export_path)
+    # print("load_model \n ", load_model({"input_value": value, "input_index": index}))
+
+    tf.compat.v1.keras.experimental.export_saved_model(model, export_path, custom_objects={'FMLayer': FMLayer})
+
 
 
 
