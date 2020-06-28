@@ -249,7 +249,6 @@ def rnn_step(inp, state):
 def dynamic_rnn(rnn_step, input_data, initial_state):
     input_data = tf.transpose(input_data, [1, 0, 2])
     print(input_data)
-    max_seq_len = input_data.shape[0]
     states = tf.TensorArray(tf.float32, size=max_seq_len)
     print("states", states)
     state = initial_state

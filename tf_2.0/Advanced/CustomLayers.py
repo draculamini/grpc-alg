@@ -23,6 +23,9 @@ if __name__ == "__main__":
 
     _ = layer(tf.zeros([10, 5]))
 
+
+    print(_.shape)
+
     print([var.name for var in layer.trainable_variables])
 
     print(layer.kernel)

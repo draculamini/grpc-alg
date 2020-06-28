@@ -59,18 +59,22 @@ if __name__ == '__main__':
     feat_index = tf.keras.Input(input_dim, name="feat_index", dtype=tf.int64)
     feat_value = tf.keras.Input(input_dim, name="feat_value")
 
-    x = tf.keras.backend.random_normal(
-        [100], mean=0.0, stddev=1.0, dtype=None, seed=None
+    # x = tf.keras.backend.random_normal(
+    #     [100], mean=0.0, stddev=1.0, dtype=None, seed=None
+    # )
+    fm_1_weight_table = tf.keras.layers.Embedding(
+        FEATURE_SIZE, 1, embeddings_initializer='uniform', name="embedding"
     )
-    fm_1_weight_table = tf.keras.backend.random_normal(
-        [FEATURE_SIZE], mean=0.0, stddev=1.0, dtype=None, seed=None
-    )
-    fm_1_weight = tf.nn.embedding_lookup(fm_1_weight_table, feat_index)
-    fm_1_factor = tf.keras.layers.multiply([fm_1_weight, feat_value])
+    fm_1_weight = fm_1_weight_table(feat_index)
+    # fm_1_weight (2, 39, 1)
+    fm_1_weight = tf.squeeze(fm_1_weight)
+    # feat_value (2, 39)
+    # fm_1_factor = tf.keras.layers.multiply([fm_1_weight, feat_value])
+    fm_1_factor = tf.multiply(fm_1_weight, feat_value)
 
     embed = tf.keras.layers.Embedding(FEATURE_SIZE, V_SIZE, embeddings_initializer='uniform', name="embedding")(feat_index)
 
-    tmp = tf.reshape(feat_value, [-1, input_dim, 1])
+    tmp = tf.reshape(feat_value, [-1, K.shape(feat_value)[-1], 1])
     embed_part = tf.keras.layers.multiply([embed, tmp])
 
     second_factor_sum = tf.math.reduce_sum(embed_part, 1)
